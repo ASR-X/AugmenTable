@@ -21,7 +21,8 @@
     "react-native-screens": "^2.10.1",
     "scandit-react-native-datacapture-barcode": "6.7.2",
     "scandit-react-native-datacapture-core": "6.7.2",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "expo": "^41.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
