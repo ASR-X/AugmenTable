@@ -23,7 +23,7 @@ import {
 } from 'scandit-react-native-datacapture-core';
 
 import { requestCameraPermissionsIfNeeded } from './camera-permission-handler';
-import { BarcodeListView } from './BarcodeListView';
+import { BottomSheetSV } from './BottomSheetSV';
 import { styles, values } from './styles';
 
 export class ScanPage extends Component {
@@ -205,13 +205,7 @@ export class ScanPage extends Component {
     return (
       <>
         <DataCaptureView style={styles.scanContainer} context={this.dataCaptureContext} ref={this.viewRef} />
-        <BarcodeListView
-          show={show}
-          results={capturedResults}
-          onCaptureResults={this.onCaptureResults}
-          onClearPress={this.onClearPress}
-          onCardPress={this.onCardPress}
-        />
+        <BottomSheetSV />
       </>
     );
   };
