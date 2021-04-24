@@ -21,7 +21,7 @@ export const BottomSheetSV = () => {
          onChange={handleSheetChange}
        >
          <BottomSheetView style={styles.contentContainer}>
-           {data.map(renderItem)}
+           
          </BottomSheetView>
        </BottomSheet>
    );
