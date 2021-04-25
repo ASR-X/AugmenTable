@@ -8,4 +8,4 @@ import { name as appName } from './app.json';
 import { ARInfo } from './app/ARInfo';
 
 AppRegistry.registerComponent(appName, () => App);
-AppRegistry.registerComponent(ARInfo.moduleName, () => ARInfo);
+AppRegistry.registerComponent("BarcodeTrackingAdvancedOverlayViewComponent", () => ARInfo);

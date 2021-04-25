@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { AppState, BackHandler, Dimensions, SafeAreaView } from 'react-native';
+import { AppState, BackHandler, Dimensions, Modal, Text, View } from 'react-native';
 
 import { requestCameraPermissionsIfNeeded } from './camera-permission-handler';
 import BottomSheetSV from './BottomSheetSV';
-import { styles, values } from './styles';
+import { styles } from './styles';
 
 import {
   BarcodeTracking,
@@ -28,7 +28,10 @@ import {
   Quadrilateral,
   VideoResolution,
 } from 'scandit-react-native-datacapture-core';
+import { connect } from 'react-redux';
 import {ARInfo} from './ARInfo';
+import { bindActionCreators } from 'redux';
+import {addModal} from './actions/ConditionsActions';
 
 // Calculate the width of a quadrilateral (barcode location) based on it's corners.
 Quadrilateral.prototype.width = function () {
@@ -38,7 +41,9 @@ Quadrilateral.prototype.width = function () {
   );
 };
 
-export class ScanPage extends Component {
+var Spinner = require('react-native-spinkit');
+
+class ScanPage extends Component {
 
   constructor() {
     super();
@@ -49,7 +54,8 @@ export class ScanPage extends Component {
     this.viewRef = React.createRef();
 
     this.trackedBarcodes = {};
-    this.state = { scanning: true };
+    this.Modal = ''
+    this.state = { scanning: true, loadingModal: false, descriptionModal: ''};
   }
 
   componentDidMount() {
@@ -164,7 +170,7 @@ export class ScanPage extends Component {
       // The minus sign means that the overlay will be above the barcode.
       offsetForTrackedBarcode: () => new PointWithUnit(
         new NumberWithUnit(0, MeasureUnit.Fraction),
-        new NumberWithUnit(-1, MeasureUnit.Fraction),
+        new NumberWithUnit(-0.8, MeasureUnit.Fraction),
       ),
     };
   }
@@ -189,8 +195,6 @@ export class ScanPage extends Component {
 
       const props = {
         barcodeData,
-        // Get the information you want to show from your back end system/database.
-        stock: { shelf: 4, backRoom: 8 }
       };
 
       this.advancedOverlay
@@ -199,12 +203,82 @@ export class ScanPage extends Component {
     }
   }
 
+  renderModal() {
+    let previousValue = this.Modal
+    
+    this.Modal = (' ' + this.props.conditions.modal).slice(1)
+    console.log(this.Modal)
+
+    if (!this.Modal || this.Modal === previousValue) {
+      return
+    }
+    //this.setState({modal: this.Modal, loadingModal: true})
+    var current = this.props.conditions.current
+    var conditionsarr = []
+    for (let i =0; i < current.length; i++) {
+      conditionsarr.push(current[i][0])
+    }
+    var obj = {}
+    obj["conditions"] = {"conditions": conditionsarr}
+    obj["ingredientin"] = {"ingredient": this.props.conditions.modal}
+
+    fetch(url+'/getFeedback', {
+      method: 'POST', // *GET, POST, PUT, DELETE, etc.
+      body: JSON.stringify(obj) // body data type must match "Content-Type" header
+    })
+    .then((resp) => resp.json())
+    .then(function(response) {
+        this.setState({loadingModal: false, descriptionModal: response['text']})
+      }
+    )
+
+    if (this.state.loadingModal || !this.props.conditions.modal){
+      return(<></>)
+    }
+    if (this.state.descriptionModal) {
+      return(
+        <>
+          <Text style={styles.modalTitle}>{this.props.conditions.modal}</Text>
+          <Text style={styles.modalDescription}>{this.state.descriptionModal}</Text>
+        </>
+      );
+    }
+  }
+
   render() {
     return (
       <>
+        <Modal 
+          animationType="fade"
+          transparent={false}
+          visible={true}
+          onRequestClose={() => {
+            this.props.addModal('');
+          }}>
+           <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Spinner style={styles.spinner} isVisible={this.state.loadingModal} size={50} type={'Pulse'} color={'#006fff'}></Spinner>
+              {this.renderModal()}
+            </View>
+           </View>
+          </Modal>
+
         <DataCaptureView style={styles.dataCaptureView} context={this.dataCaptureContext} ref={this.viewRef} />
         <BottomSheetSV />
       </>
     );
   };
 }
+
+const mapStateToProps = (state) => {
+  const { conditions } = state
+  return { conditions }
+};
+
+const mapDispatchToProps = dispatch => (
+  bindActionCreators({
+    addModal,
+  }, dispatch)
+);
+
+export default connect(mapStateToProps, mapDispatchToProps)(ScanPage)
