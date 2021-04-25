@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { AppState, BackHandler, Dimensions, SafeAreaView } from 'react-native';
 
 import { requestCameraPermissionsIfNeeded } from './camera-permission-handler';
-import { BottomSheetSV } from './BottomSheetSV';
+import BottomSheetSV from './BottomSheetSV';
 import { styles, values } from './styles';
 
 import {
@@ -28,6 +28,7 @@ import {
   Quadrilateral,
   VideoResolution,
 } from 'scandit-react-native-datacapture-core';
+import {ARInfo} from './ARInfo';
 
 // Calculate the width of a quadrilateral (barcode location) based on it's corners.
 Quadrilateral.prototype.width = function () {
@@ -193,7 +194,7 @@ export class ScanPage extends Component {
       };
 
       this.advancedOverlay
-        .setViewForTrackedBarcode(new ARView(props), trackedBarcode)
+        .setViewForTrackedBarcode(new ARInfo(props), trackedBarcode)
         .catch(console.warn);
     }
   }
