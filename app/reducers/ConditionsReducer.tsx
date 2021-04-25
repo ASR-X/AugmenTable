@@ -1,15 +1,11 @@
 import { combineReducers } from 'redux';
 import { ADD_CONDITION, ADD_MODAL } from '../types';
+import {conditions} from './constants'
 
 const INITIAL_STATE = {
     current: [
      ],
-    possible: [
-      ['Nut Allergies', 'Nut allergies are caused by an immunological reaction to a protein in nuts, which can lead to severe physical reactions if there is exposure.'],
-      ['Vegan', 'Veganism is a type of vegetarian diet that excludes meat, eggs, dairy products, and all other animal-derived ingredients.'],
-      ['Gluten Free', 'Gluten Free is a diet that excludes gluten, a protein found in grains such as wheat, barley and rye.'],
-      ['Kosher', 'Kosher foods are those that conform to the Jewish dietary regulations of kashrut, primarily derived from Leviticus and Deuteronomy.']
-    ],
+    possible: conditions,
     modal: ''
   };
 
