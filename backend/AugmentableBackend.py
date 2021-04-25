@@ -1,4 +1,4 @@
-from configs.py import *
+from configs import *
 import os
 import openai
 import requests
