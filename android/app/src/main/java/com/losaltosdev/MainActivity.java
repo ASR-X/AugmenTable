@@ -1,4 +1,4 @@
-package com.asrx.losaltosdev;
+package com.losaltosdev;
 
 import com.facebook.react.ReactActivity;
 

@@ -1,30 +1,41 @@
 import React, { Component } from 'react';
-import { AppState, BackHandler } from 'react-native';
-import {
-  BarcodeTracking,
-  BarcodeTrackingBasicOverlay,
-  BarcodeTrackingSettings,
-  Symbology,
-} from 'scandit-react-native-datacapture-barcode';
-import {
-  Camera,
-  CameraSettings,
-  DataCaptureContext,
-  DataCaptureView,
-  FrameSourceState,
-  VideoResolution,
-  Brush,
-  Color,
-  Anchor,
-  PointWithUnit,
-  NumberWithUnit,
-  MeasureUnit,
-  Feedback,
-} from 'scandit-react-native-datacapture-core';
+import { AppState, BackHandler, Dimensions, SafeAreaView } from 'react-native';
 
 import { requestCameraPermissionsIfNeeded } from './camera-permission-handler';
 import { BottomSheetSV } from './BottomSheetSV';
 import { styles, values } from './styles';
+
+import {
+  BarcodeTracking,
+  BarcodeTrackingAdvancedOverlay,
+  BarcodeTrackingBasicOverlay,
+  BarcodeTrackingScenario,
+  BarcodeTrackingSettings,
+  Symbology,
+} from 'scandit-react-native-datacapture-barcode';
+import {
+  Anchor,
+  Brush,
+  Camera,
+  CameraSettings,
+  Color,
+  DataCaptureContext,
+  DataCaptureView,
+  FrameSourceState,
+  MeasureUnit,
+  NumberWithUnit,
+  PointWithUnit,
+  Quadrilateral,
+  VideoResolution,
+} from 'scandit-react-native-datacapture-core';
+
+// Calculate the width of a quadrilateral (barcode location) based on it's corners.
+Quadrilateral.prototype.width = function () {
+  return Math.max(
+    Math.abs(this.topRight.x - this.topLeft.x),
+    Math.abs(this.bottomRight.x - this.bottomLeft.x),
+  );
+};
 
 export class ScanPage extends Component {
 
@@ -32,33 +43,18 @@ export class ScanPage extends Component {
     super();
 
     // Create data capture context using your license key.
-    this.dataCaptureContext = DataCaptureContext.forLicenseKey('AdIPSxx2PEouMe47bxbkqnUQRdUcP6zC4EkJakx+WLTYYBifw2K9hTIGy03ZBr+L/m5Bc7pX+kb+RckadlHx+11RUFydT9onAzecjOV6UACSHQh0z2CWz6N2Np0Hcz2mfihZaj0zHBd7XyY1B3KeXWNPB6fGYfNk+V4B3+x+r7BKcPnqyF3r+3FMozmBWaNWGXwuDIRhm3HtYmzGrGgQ0BNirvkrdh9+00Z04D1gD5blQZmZWinOnUFv8Y6jLbbCw1Ed/whaDdtRRm1t91t1Y49pmLQwba+RNnL5HF4mKYsSQShd9i37reRtKmnIUqjEnmtcECBB0oN4ejTFAiM/jU5+SJd6LuGd1S69U6wR+4Hnayd87S+jUFdpBqVtXcZJLEuW0IpiFi7UeImN0VPV9fVRsrsCQEspRlywSZhHS6fVZqDPyFZiKhZUAk0fcQICQl9UvU9yNIUnEq7TiD8eGkJCXiRYbIXjAVlFgohPQrn5ItQSNC0Q1BNFY3TIQT2j3gZeUv8lX5efFk5ekylDL93XT6gooaiO7P8WhR93joOXgfIqr26tt6cWhXhu6igD5p7GFOIWFngPhn5AiinupGSayLEuF/RlMmwfVDidmsq0lZL13XKrmoWtdDY2G+OOe7L/VAyNRMV7tIpb1buAWdkj5eODYOgFhvDMU5zC5FkjKEIvMnciz0Zpu4wwnIBH61LOuOngJ9GWrhg4Ea5KG4OR+0P5a3HsG4e+X75fkrCiAix14/KhHv0yB3ubL1AFVMAfotk9Ez4DIImj8FMUhpEZ+lP8hOUUd6Ux025qB2rccwMnzsoM3Brl/rSej1mC6/XGFgSPBBxubuIJKKQBSkC9Gk8Y/61/LVjY5A2tDrKVeZInAzyjFetCfmfXXQYMe2tBS/PSaWlt38DlSZFsLR4YhW81rv1WKfTWCJKlyqg1oDqezU4TrPXhVBS8AiObqSroJLMW1hFdia3G3pyT5oFQl2s7dI612yEdcd5eesBQ1TDVASCpmk4y5eQNRxz7mWDP+q1+Zn5KjnRONLiYETGfL9Wkuv36ehdlI1hhoWZ05isj5JVcYEZ8iYvE5Kn/SFNcnkOPFeUsYm4/ZuFTaBrQxiEBRpLW+DzQwbq+p4PN7kr9CdgqvYUETLoK69uw5j9qg8Lgvh/v3Mkc/Do0TeOolBk3qC6nJmrbCtaTR5LCcfTxkSPVpovWPn9XRms=');
+    this.dataCaptureContext = DataCaptureContext.forLicenseKey('AXHf9gJ2IgMNBK0avAbn5FMHc/IuLx5l5DGtffJQxpcUYnRNi201rew3FVCccpbVvGup5XtdcgFcQ8D+CVMab3RLcX/PbYjltgx2eulE1q2kdo+OuhI8N8xAjOsrD+vysEAhbLh+EIhdTob7dx7VSY6sIqnvHnLMV6YkcdqICrhzYtIiz6J26hda/BgFvi/TgA+1VE2cvlWzw/Rk/5SqlYuy4z1NXJqyuGS8eJlSJXvFa5v92zYVld6XPGNM8VJheEtVas8CpHtu5zY4LawhCRh518Nfdjd6+4KQQhtGYdLkfHJ9un/KSOGBe7t3xTXeRKS4pzyYo4P03+WiexCxol6fC/nsoMekrGJ/daPR8wCKTF+5Z0JRgSgXfg0UXW3JkJkGrZY9jibWyG2YyFYEgyxjFR0unOXgbfCKJEVP8U+JHfT+HsPD+RTGfh4oHjZIyjJyblhiESgvl2LcuiT8oVitvl6pXimeiiHVGJ94zg6foQRhxe6LKZ14P1LRJt6L2qg+x4ME6HeoPu4AXxGNG3QTk4/9jc9Dz2fGIkgcZsQWhRVNDfI9fvbJquUXLZQ9/VnzEfAp9coSTwrjmxrTPNjPOpXCkPXGMpK3D+8rPQWKvt5M3bZTg6p0ISSIl77PRTl75kMeXZ8Jz/xaD9JUvxZsIQOnk/u5aFdslYoHrf6XpwNwOnXbsqWSowoUpzJQ2bS8KkS7bM13aEh2cDsmvd50OvPfEbCnScIrt9+4M5sG2CRDKLPId2rDHsqqZ8CvlGdpUEZxlCqpGTiNnXLMidJ/gGXZ7CEAQ4LlCHUsUP3H4xcnFQ==');
+
     this.viewRef = React.createRef();
 
-    this.onCaptureResults = this.onCaptureResults.bind(this);
-    this.onCardPress = this.onCardPress.bind(this);
-    this.onClearPress = this.onClearPress.bind(this);
-
-    // Store results that the barcode scanner is capturing.
-    this.results = {};
-
-    this.state = {
-      show: false,
-      capturedResults: {} // The scan results that will be passed to the barcode list view.
-    };
+    this.trackedBarcodes = {};
+    this.state = { scanning: true };
   }
 
   componentDidMount() {
     AppState.addEventListener('change', this.handleAppStateChange);
     this.setupScanning();
-
-    // Keep Scandit logo visible on screen when scanning.
-    this.viewRef.current.logoAnchor = Anchor.BottomRight;
-    this.viewRef.current.logoOffset = this.logoOffset();
-
-    this.props.navigation.addListener('focus', () => {
-      this.results = {};
-    });
+    this.startCapture();
   }
 
   componentWillUnmount() {
@@ -69,7 +65,7 @@ export class ScanPage extends Component {
   handleAppStateChange = async (nextAppState) => {
     if (nextAppState.match(/inactive|background/)) {
       this.stopCapture();
-    } else {
+    } else if (this.state.scanning) {
       this.startCapture();
     }
   }
@@ -98,7 +94,7 @@ export class ScanPage extends Component {
       this.dataCaptureContext.setFrameSource(this.camera);
 
       const cameraSettings = new CameraSettings();
-      cameraSettings.preferredResolution = VideoResolution.FullHD;
+      cameraSettings.preferredResolution = VideoResolution.UHD4K;
       this.camera.applySettings(cameraSettings);
     }
 
@@ -112,7 +108,7 @@ export class ScanPage extends Component {
   setupScanning() {
     // The barcode tracking process is configured through barcode tracking settings
     // which are then applied to the barcode tracking instance that manages barcode tracking.
-    const settings = new BarcodeTrackingSettings();
+    const settings = BarcodeTrackingSettings.forScenario(BarcodeTrackingScenario.A);
 
     // The settings instance initially has all types of barcodes (symbologies) disabled. For the purpose of this
     // sample we enable a very generous set of symbologies. In your own app ensure that you only enable the
@@ -123,7 +119,6 @@ export class ScanPage extends Component {
       Symbology.UPCE,
       Symbology.Code39,
       Symbology.Code128,
-      Symbology.DataMatrix,
     ]);
 
     // Create new barcode tracking mode with the settings from above.
@@ -131,80 +126,82 @@ export class ScanPage extends Component {
 
     // Register a listener to get informed whenever a new barcode is tracked.
     this.barcodeTrackingListener = {
-      didUpdateSession: (_, session) => {
-        this.results = {};
-        Object.values(session.trackedBarcodes).forEach(trackedBarcode => {
-          const { data, symbology } = trackedBarcode.barcode;
-          this.results[data] = { data, symbology };
+      // This function is called whenever objects are updated and it's the right place to react to the tracking results.
+      didUpdateSession: (barcodeTracking, session) => {
+        // Remove information about tracked barcodes that are no longer tracked.
+        session.removedTrackedBarcodes.forEach((identifier) => {
+          this.trackedBarcodes[identifier] = null;
         });
-      }
+
+        // Update AR views
+        Object.values(session.trackedBarcodes).forEach((trackedBarcode) => {
+          this.viewRef.current.viewQuadrilateralForFrameQuadrilateral(trackedBarcode.location)
+            .then((location) => this.updateView(trackedBarcode, location));
+        });
+      },
     };
 
     this.barcodeTracking.addListener(this.barcodeTrackingListener);
 
-    // Add a barcode tracking overlay to the data capture view to render the location of captured barcodes on top of
-    // the video preview. This is optional, but recommended for better visual feedback.
-    const overlay = BarcodeTrackingBasicOverlay.withBarcodeTrackingForView(this.barcodeTracking, this.viewRef.current);
+    // Add a barcode tracking overlay to the data capture view to render the tracked barcodes on top of the video
+    // preview. This is optional, but recommended for better visual feedback. The overlay is automatically added
+    // to the view.
+    const basicOverlay = BarcodeTrackingBasicOverlay.withBarcodeTrackingForView(this.barcodeTracking, this.viewRef.current);
+    basicOverlay.brush = new Brush(Color.fromHex('FFF0'), Color.fromHex('FFFF'), 2);
 
-    // Implement the BarcodeTrackingBasicOverlayListener interface. 
-    // The method BarcodeTrackingBasicOverlayListener.brushForTrackedBarcode() is invoked every time a new tracked 
-    // barcode appears and it can be used to set a brush that will highlight that specific barcode in the overlay.
-    overlay.listener = {
-      brushForTrackedBarcode: (overlay, trackedBarcode) => new Brush(
-        Color.fromRGBA(255, 255, 255, 0.4),
-        Color.fromRGBA(255, 255, 255, 1),
-        2
-      )
+    // Add an advanced barcode tracking overlay to the data capture view to render AR visualization on top of
+    // the camera preview.
+    this.advancedOverlay = BarcodeTrackingAdvancedOverlay.withBarcodeTrackingForView(
+      this.barcodeTracking,
+      this.viewRef.current,
+    );
+
+    this.advancedOverlay.listener = {
+      // The offset of our overlay will be calculated from the center anchoring point.
+      anchorForTrackedBarcode: () => Anchor.Center,
+      // We set the offset's height to be equal of the 100 percent of our overlay.
+      // The minus sign means that the overlay will be above the barcode.
+      offsetForTrackedBarcode: () => new PointWithUnit(
+        new NumberWithUnit(0, MeasureUnit.Fraction),
+        new NumberWithUnit(-1, MeasureUnit.Fraction),
+      ),
     };
   }
 
-  logoOffset() {
-    return new PointWithUnit(
-        new NumberWithUnit(0, MeasureUnit.Pixel),
-        new NumberWithUnit(-values.cardMinHeight, MeasureUnit.DIP)
-    );
-  }
+  updateView(trackedBarcode, viewLocation) {
+    // If the barcode is wider than the desired percent of the data capture view's width, show it to the user.
+    const shouldBeShown = viewLocation.width() > Dimensions.get('window').width * 0.1;
 
-  onCaptureResults() {
-    // Do nothing when the card is expanded.
-    if (this.state.show) {
+    if (!shouldBeShown) {
+      this.trackedBarcodes[trackedBarcode.identifier] = null;
       return;
     }
 
-    if (Object.keys(this.results).length !== 0) {
-      Feedback.defaultFeedback.emit();
+    const barcodeData = trackedBarcode.barcode.data;
+
+    // The AR view associated with the tracked barcode should only be set again if it was changed,
+    // to avoid unnecessarily recreating it.
+    const didViewChange = JSON.stringify(this.trackedBarcodes[trackedBarcode.identifier]) !== JSON.stringify(barcodeData);
+
+    if (didViewChange) {
+      this.trackedBarcodes[trackedBarcode.identifier] = barcodeData;
+
+      const props = {
+        barcodeData,
+        // Get the information you want to show from your back end system/database.
+        stock: { shelf: 4, backRoom: 8 }
+      };
+
+      this.advancedOverlay
+        .setViewForTrackedBarcode(new ARView(props), trackedBarcode)
+        .catch(console.warn);
     }
-
-    this.setState({
-      capturedResults: Object.assign({}, this.results)
-    })
-    this.results = {};
-  }
-
-  onCardPress() {
-    if (this.state.show) {
-      this.startCapture();
-    } else {
-      this.stopCapture();
-    }
-
-    this.setState({
-      show: !this.state.show
-    })
-  }
-
-  onClearPress() {
-    this.startCapture();
-    this.setState({
-      show: false
-    })
   }
 
   render() {
-    const { show, capturedResults } = this.state;
     return (
       <>
-        <DataCaptureView style={styles.scanContainer} context={this.dataCaptureContext} ref={this.viewRef} />
+        <DataCaptureView style={styles.dataCaptureView} context={this.dataCaptureContext} ref={this.viewRef} />
         <BottomSheetSV />
       </>
     );

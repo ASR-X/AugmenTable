@@ -13,8 +13,8 @@ export class App extends Component {
   render() {
     return (
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="scan">
-          <Stack.Screen name="scan" component={ScanPage} options={{ title: 'Stock Count' }} />
+        <Stack.Navigator initialRouteName="scan" screenOptions={{headerShown: false}}>
+          <Stack.Screen name="scan" component={ScanPage}/>
         </Stack.Navigator>
       </NavigationContainer>
     );
