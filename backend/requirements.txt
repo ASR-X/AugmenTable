@@ -1,0 +1,6 @@
+fastapi 
+nest-asyncio 
+pyngrok 
+uvicorn 
+openai 
+google-cloud-vision 
