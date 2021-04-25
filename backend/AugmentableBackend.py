@@ -1,4 +1,4 @@
-from configs.py import *
+from configs import *
 import os
 import openai
 import requests
@@ -49,18 +49,18 @@ def isGood(conditions,ingredient):
   global gptprompt
   ret=""
   while not ("yes" in ret[-5:] or "no" in ret[-5:]):
-  condStr=""
-  if len(conditions)==0:
-    condStr="no condition"    
-  else:
-    condStr=conditions[0]
-    conditions.pop(0)
-    while len(conditions):
-      if len(conditions)==1:
-        condStr+=((", and " if ("," in condStr) else " and ")+conditions[0])
-      else:
-        condStr+=(", "+conditions[0])
+    condStr=""
+    if len(conditions)==0:
+      condStr="no condition"    
+    else:
+      condStr=conditions[0]
       conditions.pop(0)
+      while len(conditions):
+        if len(conditions)==1:
+          condStr+=((", and " if ("," in condStr) else " and ")+conditions[0])
+        else:
+          condStr+=(", "+conditions[0])
+        conditions.pop(0)
     response = openai.Completion.create(engine="curie-instruct-beta", prompt=gptprompt1+conditionsPrompt.format(condStr,ingredient),
                                         temperature=0.4,max_tokens=200,top_p=1,frequency_penalty=0.13,presence_penalty=0.08,stop=["condition:"]
     )
